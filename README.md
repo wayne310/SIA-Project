@@ -35,13 +35,14 @@ Apache-provided environment variables take precedence over values in `.env`. Kee
 
 ## Demo accounts
 
-Resident:
-- Email: `resident@example.com`
-- Password: `123456`
+    Demo Accounts: wayne@gmail.com 
+    Password: wayne123
 
-Admin:
-- Email: `admin@barangay.gov`
-- Password: `admin123`
+     Admin: admin@barangay.gov 
+    Password: admin123
+
+    Super Admin: superadmin@barangay.gov
+    Password: superadmin123
 
 ## What already works
 

@@ -551,11 +551,7 @@ function renderLogin() {
             <button class="btn btn-primary auth-submit">Login to your account</button>
           </form>
           <div class="auth-switch"><span>New to the community?</span><button id="signupButton" class="btn btn-secondary">Create account</button></div>
-          <div class="alert alert-info auth-demo">
-            Demo Accounts: <strong>wayne@gmail.com</strong> / <strong>wayne123</strong><br>
-            Admin: <strong>admin@barangay.gov</strong> / <strong>admin123</strong> <br>
-            Super Admin: <strong>superadmin@barangay.gov</strong> / <strong>superadmin123</strong>
-          </div>
+
           <p class="footer-note">AI priority is only a recommendation; an authorized barangay official makes the final decision.</p>
         </div>
       </div>
