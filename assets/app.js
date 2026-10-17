@@ -63,6 +63,7 @@ const STORAGE_KEYS = {
 const app = document.getElementById("app");
 
 const SITE_INFORMATION_CONTENT = [
+  "Last Updated: October 3, 2026",
   "Disclaimer: This website is for demonstration and academic purposes only as part of an SIA subject project. It does not represent a real company, official service, or legal business entity. No real commercial operations or claims are made.",
   "This website allows users to submit messages that may be displayed publicly. We respect your privacy and are committed to handling personal information responsibly.",
   "1. Information we collect",
