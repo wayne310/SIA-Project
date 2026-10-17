@@ -62,33 +62,55 @@ const STORAGE_KEYS = {
 
 const app = document.getElementById("app");
 
+const SITE_INFORMATION_CONTENT = [
+  "Disclaimer: This website is for demonstration and academic purposes only as part of an SIA subject project. It does not represent a real company, official service, or legal business entity. No real commercial operations or claims are made.",
+  "This website allows users to submit messages that may be displayed publicly. We respect your privacy and are committed to handling personal information responsibly.",
+  "1. Information we collect",
+  "We may collect the following information when you use the website:",
+  "- Messages submitted by users",
+  "- Date and time of each message",
+  "- IP address, browser information, and device information for security and moderation",
+  "- Server logs and error records",
+  "- Any information you provide when contacting us",
+  "2. How we use the information",
+  "We use the information to operate and improve the website, detect spam or harmful content, maintain security, and comply with legal requirements.",
+  "3. Public messages",
+  "This website is a public message wall. Messages may appear publicly and may be stored on our server. Please do not submit names, contact details, addresses, phone numbers, or other sensitive personal information.",
+  "4. Data retention",
+  "We may keep messages, logs, and related records for as long as necessary to operate the website, protect users, and comply with legal obligations. We may remove content that is harmful, unlawful, or inappropriate.",
+  "5. Security",
+  "We take reasonable steps to protect information from unauthorized access, misuse, or loss. However, no internet service is completely secure, and we cannot guarantee absolute security.",
+  "6. Third-party services",
+  "We may use hosting, analytics, or other third-party services to support the website. These services may process personal information according to their own privacy policies.",
+  "7. Cookies",
+  "We may use cookies or similar technologies to improve website performance, support functionality, and understand traffic patterns. You may disable cookies in your browser settings, but some features may not work properly.",
+  "8. Your rights",
+  "Depending on your location, you may have the right to request access to, correction of, or deletion of your personal data. If you want a message removed or have a privacy question, contact us using the details below.",
+  "9. Changes to this policy",
+  "We may update this policy from time to time. Any changes will be posted on this page with a new date.",
+  "10. Contact",
+  "If you have questions about this Privacy Policy, contact:",
+  "Message Wall Project",
+  "Email: arguellesjc.384.stud@cdd.edu.ph",
+  "Website: [your website URL]"
+];
+
 const SITE_INFORMATION = {
   "privacy-policy": {
     title: "Privacy Policy",
-    paragraphs: [
-      "This website is an academic demonstration of a barangay incident reporting system. Information entered here is used to demonstrate account and incident-reporting features.",
-      "Avoid submitting sensitive personal information. This demo is not an official channel for requesting barangay services."
-    ]
+    paragraphs: SITE_INFORMATION_CONTENT
   },
   terms: {
     title: "Terms",
-    paragraphs: [
-      "This website is created for demonstration and academic purposes only. It is not an official barangay service and does not provide emergency response.",
-      "Use the demo responsibly and submit only accurate, appropriate information."
-    ]
+    paragraphs: SITE_INFORMATION_CONTENT
   },
   moderation: {
     title: "Moderation",
-    paragraphs: [
-      "Incident submissions should be relevant, accurate, and respectful. Authorized users may review reports as part of the system demonstration.",
-      "Do not use this website to report an emergency. Contact the appropriate emergency services directly."
-    ]
+    paragraphs: SITE_INFORMATION_CONTENT
   },
   copyright: {
     title: "Copyright",
-    paragraphs: [
-      "Barangay Incident Reporting System is an academic demonstration project. This website does not represent a real company, registered business, or official government service."
-    ]
+    paragraphs: SITE_INFORMATION_CONTENT
   }
 };
 
