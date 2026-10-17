@@ -457,7 +457,7 @@ function renderLogin() {
           </form>
           <div class="auth-switch"><span>New to the community?</span><button id="signupButton" class="btn btn-secondary">Create account</button></div>
           <div class="alert alert-info auth-demo">
-            Demo accounts: <strong>wayne@gmail.com</strong> / <strong>wayne123</strong><br>
+            Demo Accounts: <strong>wayne@gmail.com</strong> / <strong>wayne123</strong><br>
             Admin: <strong>admin@barangay.gov</strong> / <strong>admin123</strong> <br>
             Super Admin: <strong>superadmin@barangay.gov</strong> / <strong>superadmin123</strong>
           </div>
