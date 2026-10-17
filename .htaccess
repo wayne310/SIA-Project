@@ -1,0 +1,6 @@
+# Protect sensitive environment files from public access.
+# This stops direct browser access to .env files that may contain
+# local database credentials or API secrets.
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
