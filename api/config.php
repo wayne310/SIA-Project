@@ -55,9 +55,9 @@ function projectEnvList($name, array $default) {
     return $values ?: $default;
 }
 
-define('DB_NAME', projectEnvValue('DB_NAME', 'barangay_data'));
-define('DB_USER', projectEnvValue('DB_USER', 'root'));
-define('DB_PASS', projectEnvValue('DB_PASS', 'root'));
+define('DB_NAME', projectEnvValue('DB_NAME', 'brgyqtll_barangay_data'));
+define('DB_USER', projectEnvValue('DB_USER', 'brgyqtll'));
+define('DB_PASS', projectEnvValue('DB_PASS', 'johnwaynecaballero'));
 define('DB_PORTS', projectEnvList('DB_PORTS', [8889, 3306]));
 define('DB_HOSTS', projectEnvList('DB_HOSTS', ['127.0.0.1', 'localhost']));
 
