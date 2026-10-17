@@ -62,6 +62,36 @@ const STORAGE_KEYS = {
 
 const app = document.getElementById("app");
 
+const SITE_INFORMATION = {
+  "privacy-policy": {
+    title: "Privacy Policy",
+    paragraphs: [
+      "This website is an academic demonstration of a barangay incident reporting system. Information entered here is used to demonstrate account and incident-reporting features.",
+      "Avoid submitting sensitive personal information. This demo is not an official channel for requesting barangay services."
+    ]
+  },
+  terms: {
+    title: "Terms",
+    paragraphs: [
+      "This website is created for demonstration and academic purposes only. It is not an official barangay service and does not provide emergency response.",
+      "Use the demo responsibly and submit only accurate, appropriate information."
+    ]
+  },
+  moderation: {
+    title: "Moderation",
+    paragraphs: [
+      "Incident submissions should be relevant, accurate, and respectful. Authorized users may review reports as part of the system demonstration.",
+      "Do not use this website to report an emergency. Contact the appropriate emergency services directly."
+    ]
+  },
+  copyright: {
+    title: "Copyright",
+    paragraphs: [
+      "Barangay Incident Reporting System is an academic demonstration project. This website does not represent a real company, registered business, or official government service."
+    ]
+  }
+};
+
 const DEFAULT_CATEGORIES = [
   { category_id: 1, category_name: "Fire", description: "Emergency fire incidents", created_at: "" },
   { category_id: 2, category_name: "Accident", description: "Vehicle or personal accident", created_at: "" },
@@ -362,6 +392,12 @@ function isSuperAdmin() {
 }
 
 async function render() {
+  const infoSlug = window.location.hash.slice(1);
+  if (Object.hasOwn(SITE_INFORMATION, infoSlug)) {
+    renderInformationPage(infoSlug);
+    return;
+  }
+
   if (!state.user) {
     renderLogin();
     return;
@@ -416,6 +452,42 @@ function resetTurnstile(name) {
   if (field) field.value = "";
 }
 
+function renderAuthFooter() {
+  return `
+    <footer class="auth-footer">
+      <div class="auth-disclaimer"><strong>Disclaimer:</strong> This website is created for demonstration and academic purposes only as part of an SIA subject project. It is not a real company, official service, registered business, or commercial website. No claims are made regarding actual business operations, legal standing, or real-world services.</div>
+      <nav class="auth-footer-links" aria-label="Site information">
+        <a href="#privacy-policy">Privacy Policy</a>
+        <a href="#terms">Terms</a>
+        <a href="#moderation">Moderation</a>
+        <a href="#copyright">Copyright</a>
+      </nav>
+      <p class="auth-copyright">&copy; ${new Date().getFullYear()} Barangay Incident Reporting System</p>
+    </footer>`;
+}
+
+function renderInformationPage(slug) {
+  if (!Object.hasOwn(SITE_INFORMATION, slug)) return;
+  const page = SITE_INFORMATION[slug];
+
+  removeTurnstileWidgets();
+  app.innerHTML = `
+    <main class="information-page">
+      <article class="information-document">
+        <a class="information-back" href="#">&#8592; Back to Sign In</a>
+        <p class="information-kicker">Site Information</p>
+        <h1>${esc(page.title)}</h1>
+        ${page.paragraphs.map(paragraph => `<p>${esc(paragraph)}</p>`).join("")}
+        <nav class="information-links" aria-label="Other site information">
+          <a href="#privacy-policy">Privacy Policy</a>
+          <a href="#terms">Terms</a>
+          <a href="#moderation">Moderation</a>
+          <a href="#copyright">Copyright</a>
+        </nav>
+      </article>
+    </main>`;
+}
+
 function renderLogin() {
   removeTurnstileWidgets();
   app.innerHTML = `
@@ -466,6 +538,7 @@ function renderLogin() {
       </div>
         </section>
       </div>
+      ${renderAuthFooter()}
     </div>`;
   renderTurnstileWidget("login", "login");
   document.getElementById("loginForm").addEventListener("submit", login);
@@ -556,6 +629,7 @@ function renderSignup() {
       </div>
         </section>
       </div>
+      ${renderAuthFooter()}
     </div>`;
 
   renderTurnstileWidget("signup", "signup");
@@ -1264,4 +1338,5 @@ function showAdminDetail(id) {
   };
 }
 
+window.addEventListener("hashchange", render);
 render();
