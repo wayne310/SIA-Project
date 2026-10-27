@@ -53,7 +53,7 @@ Apache-provided environment variables take precedence over values in `.env`. Kee
 - Photo preview
 - Browser geolocation
 - Incident categories
-- Server-side AI incident priority recommendation (OpenAI Responses API)
+- Server-side AI incident priority recommendation (Gemini API)
 - Resident report tracking
 - Admin dashboard
 - Search and filters
@@ -65,6 +65,6 @@ Apache-provided environment variables take precedence over values in `.env`. Kee
 
 ## Important
 
-Incident reports are submitted to the PHP/MySQL API. PHP sends only the incident category and description to OpenAI for a suggested priority; report photos, location, and reporter details are not sent. The AI result remains a recommendation, and an authorized barangay official must verify the official priority.
+Incident reports are submitted to the PHP/MySQL API. PHP sends only the incident category and description to the Gemini API for a suggested priority; report photos, location, and reporter details are not sent. The AI result remains a recommendation, and an authorized barangay official must verify the official priority.
 
-Set `OPENAI_API_KEY`, `TURNSTILE_SECRET`, and `TURNSTILE_HOSTNAMES` in the MAMP/Apache server environment. `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`. Never put secret keys in frontend code or commit them to the project.
+Set `GEMINI_API_KEY`, `TURNSTILE_SECRET`, and `TURNSTILE_HOSTNAMES` in the project `.env` file or hosting environment. `GEMINI_MODEL` is optional and defaults to `gemini-3.1-flash-lite`. Never put secret keys in frontend code or commit them to the project.

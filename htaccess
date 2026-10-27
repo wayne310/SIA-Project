@@ -4,3 +4,7 @@
 <FilesMatch "^\.env">
     Require all denied
 </FilesMatch>
+
+# Cloudflare Turnstile environment variables
+SetEnv TURNSTILE_SECRET "0x4AAAAAAFFZVZXQts5YsRb7J9Gk6JCdwOE"
+SetEnv TURNSTILE_HOSTNAMES "brgyincidentreport.site"

@@ -1,0 +1,23 @@
+[17-Oct-2026 14:22:21 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 14:23:07 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 14:24:14 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 14:33:10 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 14:33:38 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 14:38:29 UTC] Turnstile hostname mismatch. Received brgyincidentreport.site.
+[17-Oct-2026 15:19:55 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[17-Oct-2026 15:20:01 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[17-Oct-2026 15:20:30 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[17-Oct-2026 15:21:21 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[17-Oct-2026 15:21:46 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[17-Oct-2026 15:27:12 UTC] Turnstile rejected a token. Cloudflare error codes: invalid-input-response
+[27-Oct-2026 14:12:04 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:13:43 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:13:45 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:13:47 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:14:01 UTC] [AI classification] The server could not reach Gemini; check outbound HTTPS, PHP SSL certificates, and allow_url_fopen
+[27-Oct-2026 14:15:07 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:15:11 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:16:08 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:17:25 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:22:27 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)
+[27-Oct-2026 14:23:39 UTC] [AI classification] Gemini returned HTTP 503 (UNAVAILABLE)

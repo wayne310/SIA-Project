@@ -40,11 +40,11 @@ The registration, login, and incident-creation endpoints require Cloudflare Site
 
 The public site key is configured in `assets/app.js`. For production, configure the production hostname separately; do not include local hostnames in the production backend's allowlist. Incident photos are stored in `api/uploads/incidents` and are served through the authenticated `api/photo.php` endpoint.
 
-## OpenAI local configuration
+## Gemini API configuration
 
-Incident priority is classified in PHP through the OpenAI Responses API. Configure these values in the same MAMP/Apache server environment, then restart MAMP:
+Incident priority is classified in PHP through the Gemini API. Configure these values in the project `.env` file or the hosting environment:
 
-- `OPENAI_API_KEY` - the OpenAI API key; keep it server-side and out of version control.
-- `OPENAI_MODEL` - optional model override; defaults to `gpt-4o-mini`.
+- `GEMINI_API_KEY` - the Gemini API key; keep it server-side and out of version control.
+- `GEMINI_MODEL` - optional model override; defaults to `gemini-3.1-flash-lite`.
 
-Only the incident category and description are sent to OpenAI. The browser-provided priority is ignored, and the result is stored as an AI recommendation for an authorized official to review. See the [Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create) and [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs).
+Only the incident category and description are sent to Gemini. The browser-provided priority is ignored, and the result is stored as an AI recommendation for an authorized official to review. See the [Gemini API structured output guide](https://ai.google.dev/gemini-api/docs/structured-output).
