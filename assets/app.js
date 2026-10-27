@@ -552,7 +552,6 @@ function renderLogin() {
           </form>
           <div class="auth-switch"><span>New to the community?</span><button id="signupButton" class="btn btn-secondary">Create account</button></div>
 
-          <p class="footer-note">AI priority is only a recommendation; an authorized barangay official makes the final decision.</p>
         </div>
       </div>
         </section>
@@ -973,12 +972,16 @@ function incidentTable(list, resident = false) {
   if (!items.length) return `<div class="empty">No incident reports yet.</div>`;
 
   return `<div class="table-wrap"><table>
-    <thead><tr><th>ID</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <thead><tr><th>ID</th><th>Category</th><th>Location</th>${resident
+      ? "<th>Official Priority</th>"
+      : "<th>AI Suggestion</th><th>Official Priority</th>"}<th>Status</th><th>Date</th><th></th></tr></thead>
     <tbody>${items.map(i => `<tr>
       <td><strong>${esc(i.id)}</strong></td>
       <td>${esc(i.category)}</td>
       <td>${esc(i.location)}</td>
-      <td>${priorityBadge(i.verifiedPriority || i.aiPriority)}</td>
+      ${resident
+        ? `<td>${priorityBadge(i.verifiedPriority)}</td>`
+        : `<td>${priorityBadge(i.aiPriority)}</td><td>${priorityBadge(i.verifiedPriority)}</td>`}
       <td>${badge(i.status, i.status)}</td>
       <td>${dateTime(i.createdAt)}</td>
       <td><button class="btn btn-secondary btn-sm viewBtn" data-id="${esc(i.id)}">View</button></td>
@@ -1005,7 +1008,6 @@ function renderReportForm() {
   document.getElementById("main").innerHTML = `
     <h1 class="page-title">Report an Incident</h1>
     <p class="page-subtitle">Provide accurate information so barangay personnel can review your report.</p>
-    <div class="alert alert-info"><strong>Important:</strong> AI priority is only a recommendation. An authorized barangay official must verify the priority before it becomes official.</div>
     <form class="card" id="incidentForm">
       <div class="grid grid-2">
         <div>
@@ -1168,14 +1170,12 @@ function renderResidentDetails(id) {
             <strong>Location</strong><span>${esc(i.location)}</span>
             <strong>Status</strong><span>${badge(i.status, i.status)}</span>
             <strong>Official Priority</strong><span>${priorityBadge(official)}</span>
-            <strong>AI Suggestion</strong><span>${priorityBadge(i.aiPriority)}</span>
             <strong>Verification</strong><span>${esc(i.verification)}</span>
           </div>
         </div>
         <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
         <strong>Description</strong>
         <p>${esc(i.description)}</p>
-        ${i.verification !== "Verified" ? `<div class="alert alert-warning">The AI priority shown above is not final. Authorized barangay personnel must review and verify it.</div>` : ""}
       </div>
       <div class="card">
         <h2 style="margin-top:0">Status History</h2>
@@ -1232,7 +1232,7 @@ function renderAdminDashboard() {
       </div>
     </div>
     <div class="card mt">
-      <h2 style="margin-top:0">Latest Reports</h2>
+      <h2 style="margin-top:0">Latest Reports · AI Suggestions and Official Priorities</h2>
       ${incidentTable(all.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8))}
     </div>`;
 
