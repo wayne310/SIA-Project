@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NULL,
     address VARCHAR(255) NULL,
+    birthday DATE NULL,
+    nationality VARCHAR(100) NULL,
     role ENUM('resident','admin','super_admin') NOT NULL DEFAULT 'resident',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -64,26 +66,31 @@ CREATE TABLE IF NOT EXISTS incident_photos (
     FOREIGN KEY (incident_id) REFERENCES incidents(incident_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS incident_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    actor_name VARCHAR(150) NOT NULL,
+    action VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (incident_id) REFERENCES incidents(incident_id) ON DELETE CASCADE
+);
+
 INSERT INTO categories (category_name, description)
-VALUES
-('Fire', 'Emergency fire incidents'),
-('Accident', 'Vehicle or personal accident'),
-('Flooding', 'Flooded roads or crossings'),
-('Garbage', 'Illegal dumping or trash accumulation'),
-('Traffic', 'Traffic obstruction or road issue'),
-('Road Obstruction', 'Blockages on roads or pathways'),
-('Other', 'Other barangay concerns')
-ON DUPLICATE KEY UPDATE category_name = VALUES(category_name);
+SELECT 'Fire', 'Emergency fire incidents' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Fire')
+UNION ALL SELECT 'Accident', 'Vehicle or personal accident' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Accident')
+UNION ALL SELECT 'Flooding', 'Flooded roads or crossings' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Flooding')
+UNION ALL SELECT 'Garbage', 'Illegal dumping or trash accumulation' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Garbage')
+UNION ALL SELECT 'Traffic', 'Traffic obstruction or road issue' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Traffic')
+UNION ALL SELECT 'Road Obstruction', 'Blockages on roads or pathways' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Road Obstruction')
+UNION ALL SELECT 'Other', 'Other barangay concerns' WHERE NOT EXISTS (SELECT 1 FROM categories WHERE category_name = 'Other');
 
 INSERT INTO status (status_name, description)
-VALUES
-('Submitted', 'New report submitted'),
-('Under Review', 'Assigned for review'),
-('Verified', 'Official priority reviewed'),
-('In Progress', 'Barangay action started'),
-('Resolved', 'Incident addressed'),
-('Problem Solved', 'Incident problem has been solved')
-ON DUPLICATE KEY UPDATE status_name = VALUES(status_name);
+SELECT 'Submitted', 'New report submitted' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'Submitted')
+UNION ALL SELECT 'Under Review', 'Assigned for review' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'Under Review')
+UNION ALL SELECT 'Verified', 'Official priority reviewed' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'Verified')
+UNION ALL SELECT 'In Progress', 'Barangay action started' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'In Progress')
+UNION ALL SELECT 'Resolved', 'Incident addressed' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'Resolved')
+UNION ALL SELECT 'Problem Solved', 'Incident problem has been solved' WHERE NOT EXISTS (SELECT 1 FROM status WHERE status_name = 'Problem Solved');
 
 INSERT INTO users (first_name, last_name, email, password, role)
 VALUES

@@ -682,7 +682,8 @@ async function signup(e) {
     return;
   }
 
-  const birthDate = new Date(birthdayStr);
+  const [birthYear, birthMonth, birthDay] = birthdayStr.split("-").map(Number);
+  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -706,7 +707,6 @@ async function signup(e) {
       address: `${street}, ${barangay}, ${city}, ${province}`,
       birthday: birthdayStr,
       nationality,
-      age,
       "cf-turnstile-response": document.getElementById("turnstile-signup-token").value
     };
 
@@ -794,11 +794,7 @@ function renderShell() {
     </div>
     <div id="toast" class="toast"></div>`;
 
-  document.getElementById("logoutBtn").onclick = () => {
-    state.user = null;
-    save();
-    render();
-  };
+  document.getElementById("logoutBtn").onclick = logout;
 
   const menu = document.getElementById("menuBtn");
   if (menu) {
@@ -806,6 +802,17 @@ function renderShell() {
       const isOpen = document.getElementById("sidebar").classList.toggle("open");
       menu.setAttribute("aria-expanded", String(isOpen));
     };
+  }
+}
+
+async function logout() {
+  try {
+    await fetchJson(`logout.php?token=${encodeURIComponent(currentToken())}`, { method: "POST" });
+    state.user = null;
+    save();
+    await render();
+  } catch (error) {
+    showToast(error.message || "Could not securely log out. Please try again.");
   }
 }
 

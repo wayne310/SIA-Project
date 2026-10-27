@@ -75,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $photoStmt = $pdo->prepare('SELECT * FROM incident_photos WHERE incident_id = ? ORDER BY photo_id ASC');
         $photoStmt->execute([$incident['incident_id']]);
         $incident['photos'] = $photoStmt->fetchAll();
+        $incident['history'] = fetchIncidentHistory($pdo, $incident['incident_id']);
     }
     unset($incident);
 
@@ -120,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $photoStmt->execute([$incidentId, $photoFilename]);
         }
 
+        recordIncidentHistory($pdo, $incidentId, displayIncidentActor($user), 'Report submitted');
         $pdo->commit();
     } catch (Throwable $error) {
         if ($pdo->inTransaction()) $pdo->rollBack();
@@ -131,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $createdStmt->execute([$incidentId]);
     $record = $createdStmt->fetch();
     $record['photos'] = [];
+    $record['history'] = fetchIncidentHistory($pdo, $incidentId);
 
     if ($photoFilename !== null) {
         $photoQuery = $pdo->prepare('SELECT * FROM incident_photos WHERE incident_id = ? ORDER BY photo_id ASC');
@@ -159,11 +162,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         jsonResponse(404, ['error' => 'Incident not found']);
     }
 
-    if ($auth['user']['role'] !== 'admin' && $incident['user_id'] !== $auth['user']['user_id']) {
+    $isAdmin = $auth['user']['role'] === 'admin';
+    if (!$isAdmin && (int)$incident['user_id'] !== (int)$auth['user']['user_id']) {
         jsonResponse(403, ['error' => 'Access denied']);
     }
 
-    $allowed = ['status_id', 'verified_priority', 'verification_status', 'description', 'location', 'latitude', 'longitude'];
+    $adminFields = ['status_id', 'verified_priority', 'verification_status'];
+    if (!$isAdmin && array_intersect($adminFields, array_keys($data))) {
+        jsonResponse(403, ['error' => 'Only an admin can change incident status or verification']);
+    }
+
+    $allowed = $isAdmin
+        ? array_merge($adminFields, ['description', 'location', 'latitude', 'longitude'])
+        : ['description', 'location', 'latitude', 'longitude'];
     $updates = [];
     $params = [];
 
@@ -178,9 +189,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         jsonResponse(400, ['error' => 'No valid fields to update']);
     }
 
+    $newStatusName = null;
+    if (array_key_exists('status_id', $data)) {
+        $statusStmt = $pdo->prepare('SELECT status_name FROM status WHERE status_id = ? LIMIT 1');
+        $statusStmt->execute([(int)$data['status_id']]);
+        $newStatusName = $statusStmt->fetchColumn();
+        if (!$newStatusName) {
+            jsonResponse(400, ['error' => 'Incident status is invalid']);
+        }
+    }
+    if (array_key_exists('verified_priority', $data)
+        && !in_array($data['verified_priority'], ['Low', 'Medium', 'High', 'Critical'], true)) {
+        jsonResponse(400, ['error' => 'Verified priority is invalid']);
+    }
+    if (array_key_exists('verification_status', $data)
+        && !in_array($data['verification_status'], ['Pending', 'Verified'], true)) {
+        jsonResponse(400, ['error' => 'Verification status is invalid']);
+    }
+
     $params[] = $incidentId;
-    $stmt = $pdo->prepare('UPDATE incidents SET ' . implode(', ', $updates) . ', updated_at = NOW() WHERE incident_id = ?');
-    $stmt->execute($params);
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare('UPDATE incidents SET ' . implode(', ', $updates) . ', updated_at = NOW() WHERE incident_id = ?');
+        $stmt->execute($params);
+
+        $actorName = displayIncidentActor($auth['user']);
+        if (array_key_exists('status_id', $data) && (int)$data['status_id'] !== (int)$incident['status_id']) {
+            recordIncidentHistory($pdo, $incidentId, $actorName, 'Status changed to ' . $newStatusName);
+        }
+        $priorityChanged = array_key_exists('verified_priority', $data)
+            && $data['verified_priority'] !== $incident['verified_priority'];
+        $verificationChanged = array_key_exists('verification_status', $data)
+            && $data['verification_status'] !== $incident['verification_status'];
+        if ($priorityChanged || $verificationChanged) {
+            $verificationStatus = $data['verification_status'] ?? $incident['verification_status'];
+            $priority = $data['verified_priority'] ?? $incident['verified_priority'];
+            $action = $verificationStatus === 'Verified' && $priority
+                ? 'Priority verified as ' . $priority
+                : 'Verification status changed to ' . $verificationStatus;
+            recordIncidentHistory($pdo, $incidentId, $actorName, $action);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        error_log('Incident update failed: ' . $error->getMessage());
+        jsonResponse(500, ['error' => 'Incident could not be updated']);
+    }
 
     $updated = $pdo->prepare('SELECT * FROM incidents WHERE incident_id = ? LIMIT 1');
     $updated->execute([$incidentId]);

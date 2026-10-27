@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
@@ -308,6 +308,29 @@ function requireAuth() {
 
     unset($user['password']);
     return ['user' => $user, 'session' => $session];
+}
+
+function fetchIncidentHistory(PDO $pdo, $incidentId) {
+    $stmt = $pdo->prepare(
+        'SELECT ih.action, ih.created_at AS at, ih.actor_name AS `by`
+         FROM incident_history ih
+         WHERE ih.incident_id = ?
+         ORDER BY ih.history_id ASC'
+    );
+    $stmt->execute([$incidentId]);
+    return $stmt->fetchAll();
+}
+
+function recordIncidentHistory(PDO $pdo, $incidentId, $actorName, $action) {
+    $stmt = $pdo->prepare(
+        'INSERT INTO incident_history (incident_id, actor_name, action, created_at)
+         VALUES (?, ?, ?, NOW())'
+    );
+    $stmt->execute([$incidentId, $actorName, $action]);
+}
+
+function displayIncidentActor(array $user) {
+    return trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: 'User';
 }
 
 function normalizeStatus($status) {
