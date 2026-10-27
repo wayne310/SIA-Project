@@ -253,7 +253,7 @@ function normalizeIncident(incident) {
         ? `${API_BASE}/photo.php?photo_id=${encodeURIComponent(firstPhoto.photo_id)}&token=${encodeURIComponent(currentToken())}`
         : firstPhoto.photo_path || "")
       : incident.photo_path || "",
-    aiPriority: incident.ai_priority || "Medium",
+    aiPriority: incident.ai_priority || null,
     verifiedPriority: incident.verified_priority || null,
     verification: incident.verification_status || "Pending",
     status: statusRow ? statusRow.status_name : "Submitted",
@@ -404,6 +404,10 @@ function badge(text, type = text) {
 
 function priorityBadge(p) {
   return p ? badge(p, p) : `<span class="badge badge-submitted">Pending</span>`;
+}
+
+function aiSuggestionBadge(priority) {
+  return priority ? priorityBadge(priority) : `<span class="badge badge-submitted">Not generated</span>`;
 }
 
 function isAdmin() {
@@ -982,7 +986,7 @@ function incidentTable(list, resident = false) {
       <td>${esc(i.location)}</td>
       ${resident
         ? `<td>${priorityBadge(i.verifiedPriority)}</td>`
-        : `<td>${priorityBadge(i.aiPriority)}</td><td>${priorityBadge(i.verifiedPriority)}</td>`}
+        : `<td>${aiSuggestionBadge(i.aiPriority)}</td><td>${priorityBadge(i.verifiedPriority)}</td>`}
       <td>${badge(i.status, i.status)}</td>
       <td>${dateTime(i.createdAt)}</td>
       <td><div class="actions">
@@ -1326,7 +1330,10 @@ function showAdminDetail(id) {
     <div class="card">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <div><h2 style="margin:0 0 4px">Review ${esc(i.id)}</h2><p class="page-subtitle" style="margin:0">${esc(i.reporter)} · ${dateTime(i.createdAt)}</p></div>
-        <div>${priorityBadge(i.aiPriority)} <span style="margin-left:5px">${priorityBadge(i.verifiedPriority)}</span></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <span><strong>AI Suggestion:</strong> ${aiSuggestionBadge(i.aiPriority)}</span>
+          <span><strong>Official Priority:</strong> ${priorityBadge(i.verifiedPriority)}</span>
+        </div>
       </div>
       <div class="grid grid-2 mt">
         <div>
@@ -1338,11 +1345,14 @@ function showAdminDetail(id) {
             <strong>Category</strong><span>${esc(i.category)}</span>
             <strong>Location</strong><span>${esc(i.location)}</span>
             <strong>Description</strong><span>${esc(i.description)}</span>
-            <strong>AI Priority</strong><span>${priorityBadge(i.aiPriority)}</span>
+            <strong>AI Suggestion</strong><span id="aiSuggestionValue">${aiSuggestionBadge(i.aiPriority)}</span>
             <strong>Verification</strong><span>${esc(i.verification)}</span>
           </div>
           <hr style="border:0;border-top:1px solid var(--border);margin:18px 0">
           <div class="alert alert-warning"><strong>Human verification required.</strong> Review the AI suggestion and change it if needed.</div>
+          <div class="actions mb">
+            <button class="btn btn-secondary" id="generateAiSuggestion">${i.aiPriority ? "Regenerate AI Suggestion" : "Get AI Suggestion"}</button>
+          </div>
           <div class="grid grid-2">
             <div class="form-group">
               <label class="form-label">Official Priority</label>
@@ -1360,6 +1370,27 @@ function showAdminDetail(id) {
         </div>
       </div>
     </div>`;
+
+  document.getElementById("generateAiSuggestion").onclick = async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Generating suggestion...";
+    try {
+      const result = await fetchJson(`incidents/suggest.php?id=${encodeURIComponent(id)}&token=${encodeURIComponent(currentToken())}`, {
+        method: "POST",
+        body: JSON.stringify({})
+      });
+      const incident = state.incidents.find(item => String(item.incident_id) === String(id));
+      if (incident) incident.ai_priority = result.ai_priority;
+      save();
+      showAdminDetail(id);
+      showToast("AI suggestion generated. Review it before setting the official priority.");
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = i.aiPriority ? "Regenerate AI Suggestion" : "Get AI Suggestion";
+      showToast(error.message || "AI suggestion could not be generated.");
+    }
+  };
 
   document.getElementById("verifyBtn").onclick = async () => {
     const newPriority = document.getElementById("officialPriority").value;

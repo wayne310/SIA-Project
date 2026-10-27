@@ -210,7 +210,7 @@ function classifyIncidentRisk($category, $description) {
         }
 
         error_log('[AI classification] ' . $error);
-        jsonResponse(502, ['error' => $error . '; incident was not saved']);
+        jsonResponse(502, ['error' => $error . '; AI suggestion was not generated']);
     }
 
     $candidate = is_array($result) ? ($result['candidates'][0] ?? null) : null;
@@ -230,7 +230,7 @@ function classifyIncidentRisk($category, $description) {
         $error = 'Gemini returned no usable classification';
         if ($safeDetails !== '') $error .= ' (' . $safeDetails . ')';
         error_log('[AI classification] ' . $error);
-        jsonResponse(502, ['error' => $error . '; incident was not saved']);
+        jsonResponse(502, ['error' => $error . '; AI suggestion was not generated']);
     }
 
     $classification = json_decode($responseText, true);
@@ -244,7 +244,7 @@ function classifyIncidentRisk($category, $description) {
     $error = 'Gemini returned an invalid classification';
     if ($safeDetails !== '') $error .= ' (' . $safeDetails . ')';
     error_log('[AI classification] ' . $error);
-    jsonResponse(502, ['error' => $error . '; incident was not saved']);
+    jsonResponse(502, ['error' => $error . '; AI suggestion was not generated']);
 }
 
 function getDbConnection() {

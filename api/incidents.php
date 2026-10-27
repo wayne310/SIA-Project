@@ -107,13 +107,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         jsonResponse(400, ['error' => 'Incident category is invalid']);
     }
 
-    $aiPriority = classifyIncidentRisk($categoryName, $description);
     $photoFilename = $photoData !== '' ? storeIncidentPhoto($photoData) : null;
     $statusId = 1;
     $pdo->beginTransaction();
     try {
-        $stmt = $pdo->prepare('INSERT INTO incidents (user_id, category_id, description, location, latitude, longitude, ai_priority, verified_priority, verification_status, status_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, "Pending", ?, NOW(), NOW())');
-        $stmt->execute([$user['user_id'], $categoryId, $description, $location, $latitude, $longitude, $aiPriority ?: 'Medium', $statusId]);
+        $stmt = $pdo->prepare('INSERT INTO incidents (user_id, category_id, description, location, latitude, longitude, ai_priority, verified_priority, verification_status, status_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, "Pending", ?, NOW(), NOW())');
+        $stmt->execute([$user['user_id'], $categoryId, $description, $location, $latitude, $longitude, $statusId]);
         $incidentId = $pdo->lastInsertId();
 
         if ($photoFilename !== null) {
