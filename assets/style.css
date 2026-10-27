@@ -716,9 +716,31 @@ tr:hover td { background: #f8fbf8; }
   .brand-icon { width: 32px; height: 32px; }
   .topbar-actions { gap: 6px; }
   .layout { min-height: calc(100vh - 62px); }
-  .admin-sidebar, .super-admin-sidebar { height: auto; max-height: calc(100vh - 110px); }
-  .resident-nav { gap: 4px; padding: 8px 10px; }
-  .resident-nav .nav-btn { padding: 9px 10px; font-size: 12px; }
+  .admin-sidebar, .super-admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .resident-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+    padding: 8px 10px;
+  }
+  .resident-nav .nav-btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    gap: 4px;
+    padding: 9px 4px;
+    font-size: 11px;
+    text-align: center;
+    white-space: normal;
+  }
+  .resident-nav .nav-icon { flex-basis: 20px; }
   .main { padding: 24px 15px; }
   .dashboard-heading { align-items: flex-start; margin-bottom: 20px; }
   .heading-mark { width: 48px; height: 48px; flex-basis: 48px; border-radius: 15px; font-size: 22px; }
@@ -754,4 +776,5 @@ tr:hover td { background: #f8fbf8; }
   .information-page { padding: 18px 12px; }
   .information-document { padding: 22px 16px; }
   .information-document h1 { font-size: 25px; }
+  .table-wrap th, .table-wrap td { white-space: nowrap; }
 }
