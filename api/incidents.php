@@ -242,4 +242,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     jsonResponse(200, ['message' => 'Incident updated', 'incident' => $updated->fetch()]);
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $auth = requireAuth();
+    if ($auth['user']['role'] !== 'admin') {
+        jsonResponse(403, ['error' => 'Admin access required']);
+    }
+
+    $incidentId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if (!$incidentId) {
+        jsonResponse(400, ['error' => 'Incident id is required']);
+    }
+
+    $pdo = getDbConnection();
+    $photoStmt = $pdo->prepare('SELECT photo_path FROM incident_photos WHERE incident_id = ?');
+    $photoStmt->execute([$incidentId]);
+    $photoPaths = $photoStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $pdo->beginTransaction();
+    try {
+        $check = $pdo->prepare('SELECT incident_id FROM incidents WHERE incident_id = ? LIMIT 1');
+        $check->execute([$incidentId]);
+        if (!$check->fetchColumn()) {
+            $pdo->rollBack();
+            jsonResponse(404, ['error' => 'Incident not found']);
+        }
+
+        $delete = $pdo->prepare('DELETE FROM incidents WHERE incident_id = ?');
+        $delete->execute([$incidentId]);
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        error_log('Incident deletion failed: ' . $error->getMessage());
+        jsonResponse(500, ['error' => 'Incident could not be deleted']);
+    }
+
+    $photoDirectory = __DIR__ . '/uploads/incidents';
+    foreach ($photoPaths as $photoPath) {
+        $filename = basename((string)$photoPath);
+        if (!preg_match('/\A[a-f0-9]{32}\.(?:jpeg|png|gif|webp)\z/i', $filename)) {
+            continue;
+        }
+
+        $path = $photoDirectory . DIRECTORY_SEPARATOR . $filename;
+        if (is_file($path) && !@unlink($path)) {
+            error_log('Could not remove deleted incident photo: ' . $filename);
+        }
+    }
+
+    jsonResponse(200, ['message' => 'Incident deleted successfully']);
+}
+
 jsonResponse(405, ['error' => 'Method not allowed']);

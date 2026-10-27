@@ -9,6 +9,7 @@ Available endpoints:
 - `POST /api/register.php`
 - `GET /api/incidents.php`
 - `POST /api/incidents.php`
+- `DELETE /api/incidents.php?id={id}` (admin only)
 - `GET /api/incidents/{id}.php`
 - `PUT /api/incidents/{id}.php`
 

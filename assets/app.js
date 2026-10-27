@@ -965,6 +965,7 @@ function renderResidentDashboard() {
     renderShell();
     renderPage();
   };
+  bindViewButtons();
 }
 
 function incidentTable(list, resident = false) {
@@ -984,7 +985,10 @@ function incidentTable(list, resident = false) {
         : `<td>${priorityBadge(i.aiPriority)}</td><td>${priorityBadge(i.verifiedPriority)}</td>`}
       <td>${badge(i.status, i.status)}</td>
       <td>${dateTime(i.createdAt)}</td>
-      <td><button class="btn btn-secondary btn-sm viewBtn" data-id="${esc(i.id)}">View</button></td>
+      <td><div class="actions">
+        <button class="btn btn-secondary btn-sm viewBtn" data-id="${esc(i.id)}">View</button>
+        ${!resident && isAdmin() ? `<button class="btn btn-danger btn-sm deleteIncidentBtn" data-id="${esc(i.id)}">Delete</button>` : ""}
+      </div></td>
     </tr>`).join("")}</tbody></table></div>`;
 }
 
@@ -999,6 +1003,28 @@ function bindViewButtons() {
         state.page = "details";
         renderShell();
         renderPage();
+      }
+    };
+  });
+
+  document.querySelectorAll(".deleteIncidentBtn").forEach(btn => {
+    btn.onclick = async () => {
+      const incidentId = btn.dataset.id;
+      if (!confirm(`Delete incident ${incidentId}? This will permanently remove its report, history, and photos.`)) return;
+
+      btn.disabled = true;
+      try {
+        await fetchJson(`incidents.php?id=${encodeURIComponent(incidentId)}&token=${encodeURIComponent(currentToken())}`, {
+          method: "DELETE"
+        });
+        if (state.selectedId === incidentId) state.selectedId = null;
+        await loadIncidents();
+        renderShell();
+        renderPage();
+        showToast(`Incident ${incidentId} deleted.`);
+      } catch (error) {
+        btn.disabled = false;
+        showToast(error.message || "Incident could not be deleted.");
       }
     };
   });
