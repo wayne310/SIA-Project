@@ -1065,8 +1065,9 @@ function renderReportForm() {
             <div style="font-size:32px">📷</div>
             <p style="margin:8px 0;color:var(--muted)">Take a photo using your phone camera or upload an image.</p>
             <div class="upload-row">
-              <input id="photo" type="file" accept="image/*" capture="environment" required>
+              <input id="photo" type="file" accept="image/*" aria-label="Choose an incident photo">
               <button type="button" class="btn btn-secondary" id="cameraBtn">📷 Camera</button>
+              <input id="cameraPhoto" type="file" accept="image/*" capture="environment" hidden>
             </div>
             <img id="preview" class="preview" alt="Incident photo preview">
           </div>
@@ -1086,9 +1087,10 @@ function renderReportForm() {
   renderTurnstileWidget("incident", "incident_submit");
 
   const photo = document.getElementById("photo");
-  photo.onchange = () => {
-    const file = photo.files[0];
+  const cameraPhoto = document.getElementById("cameraPhoto");
+  const updatePhotoPreview = file => {
     if (!file) return;
+    photo.setCustomValidity("");
     const reader = new FileReader();
     reader.onload = e => {
       document.getElementById("preview").src = e.target.result;
@@ -1097,7 +1099,15 @@ function renderReportForm() {
     reader.readAsDataURL(file);
   };
 
-  document.getElementById("cameraBtn").onclick = () => photo.click();
+  photo.onchange = () => {
+    cameraPhoto.value = "";
+    updatePhotoPreview(photo.files[0]);
+  };
+  cameraPhoto.onchange = () => {
+    photo.value = "";
+    updatePhotoPreview(cameraPhoto.files[0]);
+  };
+  document.getElementById("cameraBtn").onclick = () => cameraPhoto.click();
 
   document.getElementById("locationBtn").onclick = () => {
     if (!navigator.geolocation) {
@@ -1126,7 +1136,13 @@ function renderReportForm() {
 
 async function submitIncident(e) {
   e.preventDefault();
-  const file = document.getElementById("photo").files[0];
+  const photo = document.getElementById("photo");
+  const file = photo.files[0] || document.getElementById("cameraPhoto").files[0];
+  if (!file) {
+    photo.setCustomValidity("Please choose an image or take a photo with your camera.");
+    photo.reportValidity();
+    return;
+  }
   const categoryId = Number(document.getElementById("category").value);
   const description = document.getElementById("description").value.trim();
   const location = document.getElementById("location").value.trim();
