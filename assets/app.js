@@ -96,14 +96,36 @@ const SITE_INFORMATION_CONTENT = [
   "Website: [your website URL]"
 ];
 
+const TERMS_CONTENT = [
+  "Last Updated: October 28, 2026",
+  "These Terms and Conditions apply to your use of the Barangay Incident Reporting and Management System, a demonstration and academic project.",
+  "1. Purpose of the service",
+  "The website lets residents create accounts, submit incident reports, and view report updates. It is not an emergency service. For urgent situations, contact the appropriate emergency services or local authorities directly.",
+  "2. Account information",
+  "You agree to provide accurate information when creating an account and to keep your password confidential. You are responsible for activity performed through your account. Do not impersonate another person or create an account using information you are not authorized to use.",
+  "3. Acceptable use",
+  "Use the website lawfully and respectfully. Do not submit false, misleading, abusive, threatening, unlawful, or intentionally disruptive content, or attempt to access accounts or information without authorization.",
+  "4. Incident reports",
+  "Submit reports in good faith and include information that is as accurate as possible. Submitting a report does not guarantee a response, investigation, or particular outcome. Do not use the website to report an emergency.",
+  "5. Privacy",
+  "Personal information is handled as described in the Privacy Policy. Do not include unnecessary sensitive personal information in report descriptions.",
+  "6. Availability and changes",
+  "This academic demonstration is provided as-is. Features may change or become unavailable, and data may be modified or removed as part of project maintenance.",
+  "7. Suspension or termination",
+  "Access may be restricted if these terms are violated or if necessary to protect the website, its users, or the project.",
+  "8. Changes to these terms",
+  "These terms may be updated from time to time. The latest version will be posted on this page.",
+  "By creating an account, you confirm that you have read and agree to these Terms and Conditions."
+];
+
 const SITE_INFORMATION = {
   "privacy-policy": {
     title: "Privacy Policy",
     paragraphs: SITE_INFORMATION_CONTENT
   },
   terms: {
-    title: "Terms",
-    paragraphs: SITE_INFORMATION_CONTENT
+    title: "Terms and Conditions",
+    paragraphs: TERMS_CONTENT
   },
   moderation: {
     title: "Moderation",
@@ -593,11 +615,11 @@ function renderSignup() {
             <div class="grid grid-2 signup-fields">
               <div class="form-group">
                 <label class="form-label">First Name</label>
-                <input id="signupFirstName" type="text" required placeholder="Enter first name">
+                <input id="signupFirstName" type="text" required autocomplete="given-name" placeholder="Enter first name">
               </div>
               <div class="form-group">
                 <label class="form-label">Last Name</label>
-                <input id="signupLastName" type="text" required placeholder="Enter last name">
+                <input id="signupLastName" type="text" required autocomplete="family-name" placeholder="Enter last name">
               </div>
               <div class="form-group">
                 <label class="form-label">Email</label>
@@ -639,6 +661,12 @@ function renderSignup() {
                 <label class="form-label">Nationality</label>
                 <input id="signupNationality" type="text" required placeholder="e.g. Filipino">
               </div>
+              <div class="form-group signup-field-wide terms-consent">
+                <label for="signupTerms">
+                  <input id="signupTerms" type="checkbox" required>
+                  <span>I have read and agree to the <a href="#terms" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>.</span>
+                </label>
+              </div>
               <div class="form-group signup-field-wide">
                 <div id="turnstile-signup"></div>
                 <input id="turnstile-signup-token" type="hidden">
@@ -655,8 +683,20 @@ function renderSignup() {
     </div>`;
 
   renderTurnstileWidget("signup", "signup");
+  ["signupFirstName", "signupLastName", "signupBarangay", "signupCity", "signupProvince", "signupNationality"]
+    .forEach(id => installLettersOnlyInput(document.getElementById(id)));
   document.getElementById("signupForm").addEventListener("submit", signup);
   document.getElementById("backToLogin").addEventListener("click", renderLogin);
+}
+
+function installLettersOnlyInput(input) {
+  const allowedCharacters = /[^\p{L}\p{M} .'-]/gu;
+  const validText = /^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u;
+
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(allowedCharacters, "");
+    input.setCustomValidity(input.value && !validText.test(input.value) ? "Use letters only." : "");
+  });
 }
 
 async function signup(e) {
@@ -674,6 +714,13 @@ async function signup(e) {
   const province = document.getElementById("signupProvince").value.trim();
   const birthdayStr = document.getElementById("signupBirthday").value;
   const nationality = document.getElementById("signupNationality").value.trim();
+  const termsAccepted = document.getElementById("signupTerms").checked;
+
+  const textOnlyPattern = /^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u;
+  if (![firstName, lastName, barangay, city, province, nationality].every(value => textOnlyPattern.test(value))) {
+    alert("First name, last name, barangay, city / municipality, province, and nationality must contain letters only.");
+    return;
+  }
 
   if (password !== confirm) {
     alert("Passwords do not match.");
@@ -682,6 +729,11 @@ async function signup(e) {
 
   if (!street || !barangay || !city || !province) {
     alert("Please complete all address fields (Street, Barangay, City, and Province).");
+    return;
+  }
+
+  if (!termsAccepted) {
+    alert("Please agree to the Terms and Conditions to create an account.");
     return;
   }
 
@@ -707,9 +759,13 @@ async function signup(e) {
       email,
       password,
       phone,
-      address: `${street}, ${barangay}, ${city}, ${province}`,
+      street,
+      barangay,
+      city,
+      province,
       birthday: birthdayStr,
       nationality,
+      terms_accepted: termsAccepted,
       "cf-turnstile-response": document.getElementById("turnstile-signup-token").value
     };
 

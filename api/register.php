@@ -18,16 +18,38 @@ if ((!$firstName || !$lastName) && $legacyName) {
 $email = strtolower(trim((string)($data['email'] ?? '')));
 $password = (string)($data['password'] ?? '');
 $phone = trim((string)($data['phone'] ?? ''));
-$address = trim((string)($data['address'] ?? ''));
+$street = trim((string)($data['street'] ?? ''));
+$barangay = trim((string)($data['barangay'] ?? ''));
+$city = trim((string)($data['city'] ?? ''));
+$province = trim((string)($data['province'] ?? ''));
 $birthday = trim((string)($data['birthday'] ?? ''));
 $nationality = trim((string)($data['nationality'] ?? ''));
+$termsAccepted = ($data['terms_accepted'] ?? false) === true;
 $role = 'resident';
+
+$textOnly = static function (string $value): bool {
+    return preg_match("/^[\\p{L}\\p{M}][\\p{L}\\p{M} .'-]*$/u", $value) === 1;
+};
 
 if (!$firstName || strlen($firstName) > 75 || !$lastName || strlen($lastName) > 75
     || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 150
-    || strlen($password) < 6 || !$nationality || strlen($nationality) > 100) {
-    jsonResponse(400, ['error' => 'Valid first name, last name, email, password (minimum 6 characters), and nationality are required.']);
+    || strlen($password) < 6 || !$nationality || strlen($nationality) > 100
+    || !$textOnly($firstName) || !$textOnly($lastName) || !$textOnly($nationality)
+    || !$barangay || strlen($barangay) > 100 || !$textOnly($barangay)
+    || !$city || strlen($city) > 100 || !$textOnly($city)
+    || !$province || strlen($province) > 100 || !$textOnly($province)) {
+    jsonResponse(400, ['error' => 'Enter valid names, location, and nationality using letters only, a valid email, and a password of at least 6 characters.']);
 }
+
+if (!$street || strlen($street) > 255) {
+    jsonResponse(400, ['error' => 'A valid street address is required.']);
+}
+
+if (!$termsAccepted) {
+    jsonResponse(400, ['error' => 'You must agree to the Terms and Conditions to register.']);
+}
+
+$address = "{$street}, {$barangay}, {$city}, {$province}";
 
 $birthDate = DateTimeImmutable::createFromFormat('!Y-m-d', $birthday);
 $dateErrors = DateTimeImmutable::getLastErrors();

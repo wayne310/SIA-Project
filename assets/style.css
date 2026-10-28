@@ -180,6 +180,12 @@ tr:hover td { background: #fcfefd; }
 .signup-fields .form-group { margin-bottom: 0; min-width: 0; }
 .signup-field-wide { grid-column: 1 / -1; }
 .signup-submit { width: 100%; }
+.terms-consent label { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.5; }
+.terms-consent input {
+  width: 16px; height: 16px; min-height: 16px; padding: 0; flex: 0 0 16px;
+  margin: 2px 0 0; accent-color: var(--primary);
+}
+.terms-consent a { color: var(--primary-dark); font-weight: 700; }
 .login-header { text-align: center; margin-bottom: 20px; }
 .login-logo {
   width: 70px; height: 70px; margin: 0 auto 12px; border-radius: 50%;
