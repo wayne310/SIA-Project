@@ -1192,6 +1192,7 @@ function renderReportForm() {
 
 async function submitIncident(e) {
   e.preventDefault();
+  const submitButton = e.currentTarget.querySelector('button[type="submit"]');
   const photo = document.getElementById("photo");
   const file = photo.files[0] || document.getElementById("cameraPhoto").files[0];
   if (!file) {
@@ -1203,6 +1204,9 @@ async function submitIncident(e) {
   const description = document.getElementById("description").value.trim();
   const location = document.getElementById("location").value.trim();
   const turnstileToken = document.getElementById("turnstile-incident-token").value;
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Submit on Progress..";
 
   try {
     const photoData = file ? await new Promise((resolve, reject) => {
@@ -1232,6 +1236,8 @@ async function submitIncident(e) {
     renderPage();
     showToast(`Report ${incidentId} submitted successfully.`);
   } catch (error) {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit Incident Report";
     resetTurnstile("incident");
     alert(error.message || "Incident report submission failed.");
   }
@@ -1379,7 +1385,10 @@ function renderAdminReports(selectedId = null) {
   });
 
   update();
-  if (selectedId) showAdminDetail(selectedId);
+  if (selectedId) {
+    showAdminDetail(selectedId);
+    document.getElementById("adminDetail").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function renderVerification() {
