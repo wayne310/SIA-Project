@@ -45,6 +45,54 @@ async function fetchJson(url, options = {}) {
   return payload;
 }
 
+async function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read the selected image."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function prepareIncidentPhoto(file, { maxDimension = 1600, quality = 0.72 } = {}) {
+  if (!file || !(file instanceof Blob)) return "";
+
+  const sourceDataUrl = await readFileAsDataUrl(file);
+  if (file.size <= 800 * 1024) {
+    return sourceDataUrl;
+  }
+
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("The selected photo could not be processed."));
+    img.src = sourceDataUrl;
+  });
+
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0, width, height);
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        reject(new Error("Could not compress the incident photo."));
+        return;
+      }
+      resolve(blob);
+    }, "image/jpeg", quality);
+  });
+
+  return readFileAsDataUrl(blob);
+}
+
 function currentToken() {
   const user = JSON.parse(localStorage.getItem("birms_user") || "null");
   return user && user.token ? user.token : "";
@@ -1025,69 +1073,6 @@ function renderResidentDashboard() {
     renderShell();
     renderPage();
   };
-  bindViewButtons();
-}
-
-function incidentTable(list, resident = false) {
-  const items = (list || []).map(item => (item && item.id ? item : normalizeIncident(item)));
-  if (!items.length) return `<div class="empty">No incident reports yet.</div>`;
-
-  return `<div class="table-wrap"><table>
-    <thead><tr><th>ID</th><th>Category</th><th>Location</th>${resident
-      ? "<th>Official Priority</th>"
-      : "<th>AI Suggestion</th><th>Official Priority</th>"}<th>Status</th><th>Date</th><th></th></tr></thead>
-    <tbody>${items.map(i => `<tr>
-      <td><strong>${esc(i.id)}</strong></td>
-      <td>${esc(i.category)}</td>
-      <td>${esc(i.location)}</td>
-      ${resident
-        ? `<td>${priorityBadge(i.verifiedPriority)}</td>`
-        : `<td>${aiSuggestionBadge(i.aiPriority)}</td><td>${priorityBadge(i.verifiedPriority)}</td>`}
-      <td>${badge(i.status, i.status)}</td>
-      <td>${dateTime(i.createdAt)}</td>
-      <td><div class="actions">
-        <button class="btn btn-secondary btn-sm viewBtn" data-id="${esc(i.id)}">View</button>
-        ${!resident && isAdmin() ? `<button class="btn btn-danger btn-sm deleteIncidentBtn" data-id="${esc(i.id)}">Delete</button>` : ""}
-      </div></td>
-    </tr>`).join("")}</tbody></table></div>`;
-}
-
-function bindViewButtons() {
-  document.querySelectorAll(".viewBtn").forEach(btn => {
-    btn.onclick = () => {
-      state.selectedId = btn.dataset.id;
-      if (isAdmin()) {
-        state.page = "reports";
-        renderAdminReports(state.selectedId);
-      } else {
-        state.page = "details";
-        renderShell();
-        renderPage();
-      }
-    };
-  });
-
-  document.querySelectorAll(".deleteIncidentBtn").forEach(btn => {
-    btn.onclick = async () => {
-      const incidentId = btn.dataset.id;
-      if (!confirm(`Delete incident ${incidentId}? This will permanently remove its report, history, and photos.`)) return;
-
-      btn.disabled = true;
-      try {
-        await fetchJson(`incidents.php?id=${encodeURIComponent(incidentId)}&token=${encodeURIComponent(currentToken())}`, {
-          method: "DELETE"
-        });
-        if (state.selectedId === incidentId) state.selectedId = null;
-        await loadIncidents();
-        renderShell();
-        renderPage();
-        showToast(`Incident ${incidentId} deleted.`);
-      } catch (error) {
-        btn.disabled = false;
-        showToast(error.message || "Incident could not be deleted.");
-      }
-    };
-  });
 }
 
 function renderReportForm() {
@@ -1209,12 +1194,7 @@ async function submitIncident(e) {
   submitButton.textContent = "Submit on Progress..";
 
   try {
-    const photoData = file ? await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Could not read the incident photo."));
-      reader.readAsDataURL(file);
-    }) : "";
+    const photoData = file ? await prepareIncidentPhoto(file) : "";
     const result = await fetchJson(`incidents.php?token=${encodeURIComponent(currentToken())}`, {
       method: "POST",
       body: JSON.stringify({
@@ -1244,6 +1224,16 @@ async function submitIncident(e) {
 }
 
 function renderTracking() {
+  const mine = getIncidentListForUser(state.user.user_id)
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  document.getElementById("main").innerHTML = `
+    <h1 class="page-title">Track My Reports</h1>
+    <p class="page-subtitle">Monitor your submitted incidents and their current status.</p>
+    <div class="card">${incidentTable(mine, true)}</div>`;
+  bindViewButtons();
+}function renderTracking() {
   const mine = getIncidentListForUser(state.user.user_id)
     .slice()
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -1504,3 +1494,4 @@ function showAdminDetail(id) {
 
 window.addEventListener("hashchange", render);
 render();
+
