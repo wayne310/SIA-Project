@@ -108,6 +108,10 @@ const STORAGE_KEYS = {
   incidentPhotos: "birms_incident_photos"
 };
 
+const THEME_STORAGE_KEY = "birms_theme";
+let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+document.documentElement.dataset.theme = currentTheme;
+
 const app = document.getElementById("app");
 
 const SITE_INFORMATION_CONTENT = [
@@ -674,6 +678,7 @@ function renderInformationPage(slug) {
   removeTurnstileWidgets();
   app.innerHTML = `
     <main class="information-page">
+      ${themeToggleMarkup()}
       <article class="information-document">
         <a class="information-back" href="#">&#8592; Back to Sign In</a>
         <p class="information-kicker">Site Information</p>
@@ -687,12 +692,39 @@ function renderInformationPage(slug) {
         </nav>
       </article>
     </main>`;
+  bindThemeToggle();
+}
+
+function themeToggleMarkup() {
+  const isDark = currentTheme === "dark";
+  const nextTheme = isDark ? "light" : "dark";
+  return `<button class="btn btn-secondary btn-sm theme-toggle" id="themeToggle" type="button" aria-label="Switch to ${nextTheme} mode" title="Switch to ${nextTheme} mode"><span aria-hidden="true">${isDark ? "☀️" : "🌙"}</span><span class="theme-toggle-label">${isDark ? "Light mode" : "Dark mode"}</span></button>`;
+}
+
+function updateThemeToggle(button) {
+  const isDark = currentTheme === "dark";
+  const nextTheme = isDark ? "light" : "dark";
+  button.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
+  button.title = `Switch to ${nextTheme} mode`;
+  button.innerHTML = `<span aria-hidden="true">${isDark ? "☀️" : "🌙"}</span><span class="theme-toggle-label">${isDark ? "Light mode" : "Dark mode"}</span>`;
+}
+
+function bindThemeToggle() {
+  const button = document.getElementById("themeToggle");
+  if (!button) return;
+  button.addEventListener("click", () => {
+    currentTheme = currentTheme === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+    document.documentElement.dataset.theme = currentTheme;
+    updateThemeToggle(button);
+  });
 }
 
 function renderLogin() {
   removeTurnstileWidgets();
   app.innerHTML = `
     <div class="login-page auth-page">
+      ${themeToggleMarkup()}
       <div class="auth-layout">
         <section class="auth-aside">
           <div class="auth-brand"><span>🏛️</span><strong>Barangay Connect</strong></div>
@@ -736,6 +768,7 @@ function renderLogin() {
       </div>
       ${renderAuthFooter()}
     </div>`;
+  bindThemeToggle();
   renderTurnstileWidget("login", "login");
   document.getElementById("loginForm").addEventListener("submit", login);
   document.getElementById("signupButton").addEventListener("click", renderSignup);
@@ -745,6 +778,7 @@ function renderSignup() {
   removeTurnstileWidgets();
   app.innerHTML = `
     <div class="login-page auth-page">
+      ${themeToggleMarkup()}
       <div class="auth-layout auth-layout-signup">
         <section class="auth-aside">
           <div class="auth-brand"><span>🏛️</span><strong>Barangay Connect</strong></div>
@@ -834,6 +868,7 @@ function renderSignup() {
       ${renderAuthFooter()}
     </div>`;
 
+  bindThemeToggle();
   renderTurnstileWidget("signup", "signup");
   ["signupFirstName", "signupLastName", "signupBarangay", "signupCity", "signupProvince", "signupNationality"]
     .forEach(id => installLettersOnlyInput(document.getElementById(id)));
@@ -995,6 +1030,7 @@ function renderShell() {
       </div>
       <div class="topbar-actions">
         <span class="user-pill">${esc(displayName(state.user))} · ${roleLabel(state.user)}</span>
+        ${themeToggleMarkup()}
         ${hasSidebar ? `<button class="btn btn-secondary btn-sm mobile-menu" id="menuBtn" aria-expanded="false" aria-controls="sidebar">☰ Menu</button>` : ""}
         <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
       </div>
@@ -1006,6 +1042,7 @@ function renderShell() {
     <div id="toast" class="toast"></div>`;
 
   document.getElementById("logoutBtn").onclick = logout;
+  bindThemeToggle();
 
   const menu = document.getElementById("menuBtn");
   if (menu) {

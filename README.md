@@ -61,6 +61,7 @@ Apache-provided environment variables take precedence over values in `.env`. Kee
 - Official priority/status changes
 - Incident history/audit trail
 - Responsive mobile layout
+- Persistent light and dark display themes
 - localStorage UI/session cache
 
 ## Important
