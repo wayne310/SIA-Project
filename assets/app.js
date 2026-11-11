@@ -1014,6 +1014,14 @@ function renderShell() {
       menu.setAttribute("aria-expanded", String(isOpen));
     };
   }
+
+  document.querySelectorAll(".nav-btn").forEach(button => {
+    button.onclick = () => {
+      state.page = button.dataset.page;
+      renderShell();
+      renderPage();
+    };
+  });
 }
 
 async function logout() {
@@ -1032,14 +1040,6 @@ function navButton(page, icon, label) {
 }
 
 function renderPage() {
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.onclick = () => {
-      state.page = btn.dataset.page;
-      renderShell();
-      renderPage();
-    };
-  });
-
   if (isSuperAdmin()) {
     renderSuperAdminDashboard();
   } else if (isAdmin()) {
