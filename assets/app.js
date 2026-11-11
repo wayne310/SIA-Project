@@ -1006,7 +1006,7 @@ function renderShell() {
   removeTurnstileWidgets();
   const nav = isSuperAdmin() ? `
     <div class="nav-label">Super Admin</div>
-    ${navButton("users", "👥", "Manage Users")}
+    ${navButton("userTable", "👥", "Manage Users")}
   ` : isAdmin() ? `
     <div class="nav-label">Management</div>
     ${navButton("admin", "📊", "Dashboard")}
