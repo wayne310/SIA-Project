@@ -944,3 +944,97 @@ tr:hover td { background: #f4f8f2; }
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Role-specific dashboard color accents */
+.resident-layout .main {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(216, 235, 220, .66), transparent 34rem),
+    #f3f7f1;
+}
+
+.admin-layout .main {
+  background:
+    radial-gradient(ellipse at 96% 0%, rgba(232, 224, 199, .44), transparent 32rem),
+    #f6f6f0;
+}
+
+.super-admin-layout .main {
+  background:
+    radial-gradient(ellipse at 96% 0%, rgba(221, 231, 207, .58), transparent 34rem),
+    #f2f5ee;
+}
+
+.resident-heading .eyebrow { color: #638452; }
+.resident-heading .heading-mark {
+  background: linear-gradient(145deg, #e1efdc, #cce2d0);
+  color: #39744c;
+}
+
+.admin-heading .eyebrow { color: #92733b; }
+.admin-heading .heading-mark {
+  background: linear-gradient(145deg, #f3e8c9, #e9d8ad);
+  color: #8d6a2f;
+}
+
+.super-heading .eyebrow { color: #557358; }
+.super-heading .heading-mark {
+  background: linear-gradient(145deg, #e0ead8, #cdddc8);
+  color: #345d43;
+}
+
+.resident-layout .stat {
+  background: linear-gradient(145deg, #fffefa, #f4f8f0);
+  border-color: #dce8d9;
+}
+
+.resident-layout .stat::before { background: #4b8a5a; }
+.resident-layout .stat:nth-child(2)::before { background: #c9a150; }
+.resident-layout .stat:nth-child(3)::before { background: #5e9290; }
+
+.admin-layout .stat {
+  background: linear-gradient(145deg, #fffefa, #f8f6ed);
+  border-color: #e8e2d2;
+}
+
+.admin-layout .stat::before { background: #39815d; }
+.admin-layout .stat:nth-child(2)::before { background: #c3943e; }
+.admin-layout .stat:nth-child(3)::before { background: #b65f50; }
+.admin-layout .stat:nth-child(4)::before { background: #678a73; }
+
+.super-admin-layout .super-admin-actions,
+.super-admin-layout .super-admin-users {
+  background: linear-gradient(145deg, #fffefa, #f3f6ed);
+  border-color: #dce6d8;
+}
+
+.super-admin-layout .rbac-action {
+  background: linear-gradient(125deg, #52714c, #345d43);
+}
+
+.super-admin-layout .rbac-action:hover { background: #294d39; }
+
+.resident-layout .card h2 { color: #315a3f; }
+.admin-layout .card h2 { color: #425446; }
+.super-admin-layout .card h2 { color: #34513c; }
+
+.resident-layout .btn-primary {
+  background: linear-gradient(125deg, #4b8455, #2f6947);
+  box-shadow: 0 5px 13px rgba(48, 105, 71, .15);
+}
+
+.resident-layout .btn-primary:hover { background: linear-gradient(125deg, #3e754b, #285b3e); }
+
+.admin-layout .btn-primary {
+  background: linear-gradient(125deg, #347858, #215a41);
+}
+
+.super-admin-layout .table-wrap { border-color: #dce6d8; }
+.super-admin-layout th { background: #eef3e9; }
+
+@media (max-width: 680px) {
+  .resident-layout .main,
+  .admin-layout .main,
+  .super-admin-layout .main {
+    background-attachment: scroll;
+  }
+}
