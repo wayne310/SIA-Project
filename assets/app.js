@@ -493,7 +493,10 @@ function incidentTable(incidents, residentView = false) {
     ${residentView ? "" : `<td>${priorityBadge(i.verifiedPriority || i.aiPriority)}</td>`}
     <td>${badge(i.status, i.status)}</td>
     <td>${dateTime(i.createdAt)}</td>
-    <td><button type="button" class="btn btn-secondary btn-sm view-incident-btn" data-incident-id="${esc(i.id)}">${residentView ? "View" : "Review"}</button></td>
+    <td>
+      <button type="button" class="btn btn-secondary btn-sm view-incident-btn" data-incident-id="${esc(i.id)}">${residentView ? "View" : "Review"}</button>
+      ${!residentView && isAdmin() ? `<button type="button" class="btn btn-danger btn-sm delete-incident-btn" data-incident-id="${esc(i.id)}">Delete</button>` : ""}
+    </td>
   </tr>`).join("");
 
   return `${loadError}<div class="table-wrap"><table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -521,6 +524,37 @@ function bindViewButtons() {
       state.page = "details";
       renderShell();
       renderPage();
+    };
+  });
+
+  document.querySelectorAll(".delete-incident-btn").forEach(button => {
+    button.onclick = async () => {
+      const id = button.dataset.incidentId;
+      if (!id || !isAdmin()) return;
+      if (!confirm(`Delete incident report ${id}? This action cannot be undone.`)) return;
+
+      button.disabled = true;
+      try {
+        await fetchJson(`incidents.php?id=${encodeURIComponent(id)}&token=${encodeURIComponent(currentToken())}`, {
+          method: "DELETE"
+        });
+        state.incidents = state.incidents.filter(incident => String(incident.incident_id) !== String(id));
+        state.incidentPhotos = state.incidentPhotos.filter(photo => String(photo.incident_id) !== String(id));
+        state.incidentLoadError = "";
+        save();
+
+        if (state.page === "reports") {
+          renderAdminReports();
+        } else if (state.page === "verification") {
+          renderVerification();
+        } else {
+          renderAdminDashboard();
+        }
+        showToast(`Incident report ${id} deleted.`);
+      } catch (error) {
+        button.disabled = false;
+        showToast(error.message || "Incident report could not be deleted.");
+      }
     };
   });
 }
