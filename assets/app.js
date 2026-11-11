@@ -214,7 +214,8 @@ let state = {
   categories: readCollection(STORAGE_KEYS.categories, []),
   incidents: readCollection(STORAGE_KEYS.incidents, []),
   status: readCollection(STORAGE_KEYS.status, []),
-  incidentPhotos: readCollection(STORAGE_KEYS.incidentPhotos, [])
+  incidentPhotos: readCollection(STORAGE_KEYS.incidentPhotos, []),
+  incidentLoadError: ""
 };
 
 function readCollection(key, fallback) {
@@ -258,10 +259,10 @@ async function loadIncidents() {
     const data = await fetchJson(`incidents.php?token=${encodeURIComponent(token)}`);
     state.incidents = Array.isArray(data.incidents) ? data.incidents : [];
     state.incidentPhotos = state.incidents.flatMap(item => Array.isArray(item.photos) ? item.photos : []);
+    state.incidentLoadError = "";
     save();
   } catch (error) {
-    state.incidents = [];
-    state.incidentPhotos = [];
+    state.incidentLoadError = error.message || "Incident reports could not be loaded.";
   }
 }
 
@@ -468,6 +469,60 @@ function incidentLocation(i) {
   const coordinates = `${latitude},${longitude}`;
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
   return `${location}<br><a href="${mapUrl}" target="_blank" rel="noopener noreferrer" aria-label="Open reported coordinates in Google Maps">${latitude}, ${longitude}</a>`;
+}
+
+function incidentTable(incidents, residentView = false) {
+  const loadError = state.incidentLoadError
+    ? `<div class="alert alert-warning">Incident reports could not be refreshed: ${esc(state.incidentLoadError)}</div>`
+    : "";
+  if (!incidents.length) {
+    const emptyMessage = residentView
+      ? "No incident reports have been submitted yet."
+      : "No incident reports match this view.";
+    return `${loadError}<div class="alert alert-info">${emptyMessage}</div>`;
+  }
+
+  const headers = residentView
+    ? "<th>ID</th><th>Category</th><th>Location</th><th>Status</th><th>Submitted</th><th>Action</th>"
+    : "<th>ID</th><th>Reporter</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th>";
+  const rows = incidents.map(i => `<tr>
+    <td>${esc(i.id)}</td>
+    ${residentView ? "" : `<td>${esc(i.reporter)}</td>`}
+    <td>${esc(i.category)}</td>
+    <td>${incidentLocation(i)}</td>
+    ${residentView ? "" : `<td>${priorityBadge(i.verifiedPriority || i.aiPriority)}</td>`}
+    <td>${badge(i.status, i.status)}</td>
+    <td>${dateTime(i.createdAt)}</td>
+    <td><button type="button" class="btn btn-secondary btn-sm view-incident-btn" data-incident-id="${esc(i.id)}">${residentView ? "View" : "Review"}</button></td>
+  </tr>`).join("");
+
+  return `${loadError}<div class="table-wrap"><table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function bindViewButtons() {
+  document.querySelectorAll(".view-incident-btn").forEach(button => {
+    button.onclick = () => {
+      const id = button.dataset.incidentId;
+      if (!id) return;
+
+      if (isAdmin()) {
+        if (document.getElementById("adminDetail")) {
+          showAdminDetail(id);
+          document.getElementById("adminDetail").scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          state.page = "reports";
+          renderShell();
+          renderAdminReports(id);
+        }
+        return;
+      }
+
+      state.selectedId = id;
+      state.page = "details";
+      renderShell();
+      renderPage();
+    };
+  });
 }
 
 function dateTime(iso) {
@@ -1088,6 +1143,7 @@ function renderResidentDashboard() {
     renderShell();
     renderPage();
   };
+  bindViewButtons();
 }
 
 function renderReportForm() {
