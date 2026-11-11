@@ -65,7 +65,7 @@ a { color: inherit; }
 .super-admin-sidebar .nav-label { color: #b7c7bd; }
 .nav-btn {
   width: 100%; text-align: left; border: 0; background: transparent;
-  padding: 11px 12px; border-radius: 8px; color: #425048;
+  padding: 16px 12px; border-radius: 8px; color: #425048;
   margin-bottom: 3px;
   display: flex; align-items: center; gap: 10px;
 }
