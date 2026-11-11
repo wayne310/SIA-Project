@@ -455,6 +455,21 @@ function esc(value = "") {
   return String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 }
 
+function incidentLocation(i) {
+  const latitude = i.lat === null || i.lat === undefined || i.lat === "" ? NaN : Number(i.lat);
+  const longitude = i.lng === null || i.lng === undefined || i.lng === "" ? NaN : Number(i.lng);
+  const location = esc(i.location || "");
+
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90
+    || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return location;
+  }
+
+  const coordinates = `${latitude},${longitude}`;
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
+  return `${location}<br><a href="${mapUrl}" target="_blank" rel="noopener noreferrer" aria-label="Open reported coordinates in Google Maps">${latitude}, ${longitude}</a>`;
+}
+
 function dateTime(iso) {
   return new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 }
@@ -1265,7 +1280,7 @@ function renderResidentDetails(id) {
           ${i.photo ? `<img class="incident-photo" src="${i.photo}" alt="Incident photo">` : `<div class="incident-photo" style="display:grid;place-items:center">No photo</div>`}
           <div class="kv">
             <strong>Category</strong><span>${esc(i.category)}</span>
-            <strong>Location</strong><span>${esc(i.location)}</span>
+            <strong>Location</strong><span>${incidentLocation(i)}</span>
             <strong>Status</strong><span>${badge(i.status, i.status)}</span>
             <strong>Official Priority</strong><span>${priorityBadge(official)}</span>
             <strong>Verification</strong><span>${esc(i.verification)}</span>
@@ -1414,7 +1429,7 @@ function showAdminDetail(id) {
           <div class="kv">
             <strong>Reporter</strong><span>${esc(i.reporter)}</span>
             <strong>Category</strong><span>${esc(i.category)}</span>
-            <strong>Location</strong><span>${esc(i.location)}</span>
+            <strong>Location</strong><span>${incidentLocation(i)}</span>
             <strong>Description</strong><span>${esc(i.description)}</span>
             <strong>AI Suggestion</strong><span id="aiSuggestionValue">${aiSuggestionBadge(i.aiPriority)}</span>
             <strong>Verification</strong><span>${esc(i.verification)}</span>
@@ -1494,4 +1509,3 @@ function showAdminDetail(id) {
 
 window.addEventListener("hashchange", render);
 render();
-
