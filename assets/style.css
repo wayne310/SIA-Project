@@ -731,6 +731,7 @@ tr:hover td { background: #f8fbf8; }
   }
   .resident-nav {
     display: grid;
+    width: 100%;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
     overflow: visible;
