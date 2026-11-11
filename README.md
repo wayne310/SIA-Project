@@ -69,3 +69,5 @@ Apache-provided environment variables take precedence over values in `.env`. Kee
 Residents submit incident reports to the PHP/MySQL API without triggering AI classification. An admin can request an AI suggestion while reviewing a report; PHP sends only the saved incident category and description to Gemini. Report photos, location, and reporter details are not sent. The AI result remains a recommendation, and an authorized barangay official must choose and save the official priority.
 
 Set `GEMINI_API_KEY`, `TURNSTILE_SECRET`, and `TURNSTILE_HOSTNAMES` in the project `.env` file or hosting environment. `GEMINI_MODEL` is optional and defaults to `gemini-3.1-flash-lite`. Never put secret keys in frontend code or commit them to the project.
+
+The PHP server needs outbound HTTPS access to Gemini. The AI request uses PHP's cURL extension when available, with TLS certificate verification enabled, and falls back to HTTPS streams when cURL is unavailable. For the fallback, `allow_url_fopen` and a valid PHP CA certificate bundle must be configured.

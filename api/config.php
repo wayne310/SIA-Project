@@ -176,21 +176,57 @@ function classifyIncidentRisk($category, $description) {
         ],
     ];
 
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/json\r\nx-goog-api-key: " . $apiKey . "\r\n",
-            'content' => json_encode($request, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            'timeout' => 20,
-            'ignore_errors' => true,
-        ],
-    ]);
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent';
-    $response = @file_get_contents($url, false, $context);
-    $responseHeaders = $http_response_header ?? [];
+    $requestBody = json_encode($request, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    $response = false;
     $httpStatus = 0;
-    if (isset($responseHeaders[0]) && preg_match('/\s(\d{3})\s/', $responseHeaders[0], $statusMatch)) {
-        $httpStatus = (int)$statusMatch[1];
+    $transportError = '';
+
+    if (function_exists('curl_init')) {
+        $curl = curl_init($url);
+        if ($curl === false) {
+            $transportError = 'Could not initialize the cURL HTTPS client';
+        } else {
+            curl_setopt_array($curl, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $requestBody,
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/json',
+                    'x-goog-api-key: ' . $apiKey,
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 8,
+                CURLOPT_TIMEOUT => 20,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
+            ]);
+            $response = curl_exec($curl);
+            $httpStatus = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ($response === false) {
+                $transportError = curl_error($curl);
+            }
+            curl_close($curl);
+        }
+    } elseif (filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\nx-goog-api-key: " . $apiKey . "\r\n",
+                'content' => $requestBody,
+                'timeout' => 20,
+                'ignore_errors' => true,
+            ],
+        ]);
+        $response = @file_get_contents($url, false, $context);
+        $responseHeaders = $http_response_header ?? [];
+        if (isset($responseHeaders[0]) && preg_match('/\s(\d{3})\s/', $responseHeaders[0], $statusMatch)) {
+            $httpStatus = (int)$statusMatch[1];
+        }
+        if ($response === false) {
+            $transportError = error_get_last()['message'] ?? 'Unknown PHP HTTPS stream error';
+        }
+    } else {
+        $transportError = 'The cURL extension is unavailable and allow_url_fopen is disabled';
     }
     $result = $response === false ? null : json_decode($response, true);
 
@@ -206,9 +242,12 @@ function classifyIncidentRisk($category, $description) {
             $error = 'Gemini returned HTTP ' . $httpStatus;
             if ($apiErrorCode !== '') $error .= ' (' . $apiErrorCode . ')';
         } else {
-            $error = 'The server could not reach Gemini; check outbound HTTPS, PHP SSL certificates, and allow_url_fopen';
+            $error = 'The server could not reach Gemini; check outbound HTTPS and PHP cURL or HTTPS-stream SSL configuration';
         }
 
+        if ($transportError !== '') {
+            error_log('[AI classification] Gemini HTTPS transport error: ' . $transportError);
+        }
         error_log('[AI classification] ' . $error);
         jsonResponse(502, ['error' => $error . '; AI suggestion was not generated']);
     }
