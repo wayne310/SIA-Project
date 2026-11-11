@@ -1235,10 +1235,10 @@ function renderReportForm() {
           <div class="form-group">
             <label class="form-label">Location <span class="required">*</span></label>
             <div class="location-row">
-              <input id="location" required placeholder="Example: Purok 2, Barangay Main">
+              <input id="location" required readonly aria-describedby="locationHelp" placeholder="Use the button to capture your location">
               <button type="button" class="btn btn-secondary" id="locationBtn">📍 Use Location</button>
             </div>
-            <div class="help" id="locationHelp">You can enter the location manually or use the browser's location permission.</div>
+            <div class="help" id="locationHelp">This field is read-only. Use the button and allow location access to capture your location.</div>
           </div>
           <input type="hidden" id="lat"><input type="hidden" id="lng">
         </div>
@@ -1294,7 +1294,7 @@ function renderReportForm() {
 
   document.getElementById("locationBtn").onclick = () => {
     if (!navigator.geolocation) {
-      document.getElementById("locationHelp").textContent = "Geolocation is not supported. Please enter the location manually.";
+      document.getElementById("locationHelp").textContent = "This browser does not support location access. Enable location services in a supported browser to continue.";
       return;
     }
     document.getElementById("locationHelp").textContent = "Getting your location...";
@@ -1302,9 +1302,16 @@ function renderReportForm() {
       document.getElementById("lat").value = pos.coords.latitude.toFixed(6);
       document.getElementById("lng").value = pos.coords.longitude.toFixed(6);
       document.getElementById("location").value = `GPS: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
-      document.getElementById("locationHelp").textContent = "Location captured. You may replace it with a barangay/purok description.";
-    }, () => {
-      document.getElementById("locationHelp").textContent = "Location permission was not granted. Enter the location manually.";
+      document.getElementById("locationHelp").textContent = "Location captured successfully.";
+    }, error => {
+      const help = document.getElementById("locationHelp");
+      if (error.code === 1) {
+        help.textContent = "Location permission was denied. Allow location access in your browser settings, then try again.";
+      } else if (error.code === 2) {
+        help.textContent = "Your location could not be determined. Check that location services are enabled, then try again.";
+      } else {
+        help.textContent = "Location request timed out. Please try again.";
+      }
     });
   };
 
@@ -1330,6 +1337,11 @@ async function submitIncident(e) {
   const categoryId = Number(document.getElementById("category").value);
   const description = document.getElementById("description").value.trim();
   const location = document.getElementById("location").value.trim();
+  if (!location) {
+    document.getElementById("locationHelp").textContent = "Use the location button and allow location access before submitting your report.";
+    document.getElementById("locationBtn").focus();
+    return;
+  }
   const turnstileToken = document.getElementById("turnstile-incident-token").value;
 
   submitButton.disabled = true;
