@@ -1058,9 +1058,17 @@ function renderShell() {
       renderShell();
       renderPage();
       if (isSuperAdmin() && state.page === "users") {
+        const main = document.getElementById("main");
         const usersSection = document.getElementById("allUsers");
-        const top = window.scrollY + usersSection.getBoundingClientRect().top - 24;
-        window.scrollTo({ top, behavior: "smooth" });
+        const mainCanScroll = main.scrollHeight > main.clientHeight && getComputedStyle(main).overflowY !== "visible";
+        if (mainCanScroll) {
+          const requestedTop = main.scrollTop + usersSection.getBoundingClientRect().top - main.getBoundingClientRect().top - 24;
+          main.scrollTop = Math.min(main.scrollHeight - main.clientHeight, Math.max(0, requestedTop));
+        } else {
+          const requestedTop = window.scrollY + usersSection.getBoundingClientRect().top - 24;
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          window.scrollTo(0, Math.min(maxScroll, Math.max(0, requestedTop)));
+        }
       }
     };
   });

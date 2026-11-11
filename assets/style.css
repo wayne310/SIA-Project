@@ -65,7 +65,7 @@ a { color: inherit; }
 .super-admin-sidebar .nav-label { color: #b7c7bd; }
 .nav-btn {
   width: 100%; text-align: left; border: 0; background: transparent;
-  padding: 16px 12px; border-radius: 8px; color: #425048;
+  padding: 11px 12px; border-radius: 8px; color: #425048;
   margin-bottom: 3px;
   display: flex; align-items: center; gap: 10px;
 }
@@ -1068,9 +1068,19 @@ tr:hover td { background: #f4f8f2; }
   box-shadow: inset 3px 0 #e7b44f;
 }
 
+.super-admin-layout > .main {
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
 .super-admin-users { scroll-margin-top: 24px; }
 
 @media (max-width: 680px) {
+  .super-admin-layout > .main {
+    height: auto;
+    overflow-y: visible;
+  }
+
   :root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar {
     min-height: 0;
   }
