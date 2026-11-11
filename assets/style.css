@@ -1040,6 +1040,42 @@ tr:hover td { background: #f4f8f2; }
   }
 }
 
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar {
+  position: relative;
+  top: auto;
+  height: auto;
+  min-height: calc(100vh - 72px);
+  overflow: visible;
+  background: linear-gradient(180deg, #193e32, #214b39);
+  color: #fff;
+}
+
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar .nav-label {
+  color: #c3d6c9;
+}
+
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar .nav-btn {
+  color: #e8f2eb;
+}
+
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar .nav-btn:hover,
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar .nav-btn.active {
+  background: #355a46;
+  color: #fff;
+}
+
+:root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar .nav-btn.active {
+  box-shadow: inset 3px 0 #e7b44f;
+}
+
+.super-admin-users { scroll-margin-top: 24px; }
+
+@media (max-width: 680px) {
+  :root:not([data-theme="dark"]) .super-admin-layout > .super-admin-sidebar {
+    min-height: 0;
+  }
+}
+
 :root[data-theme="dark"] {
   color-scheme: dark;
   --primary: #45a981;

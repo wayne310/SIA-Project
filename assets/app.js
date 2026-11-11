@@ -1006,7 +1006,7 @@ function renderShell() {
   removeTurnstileWidgets();
   const nav = isSuperAdmin() ? `
     <div class="nav-label">Super Admin</div>
-    ${navButton("userTable", "👥", "Manage Users")}
+    ${navButton("users", "👥", "Manage Users")}
   ` : isAdmin() ? `
     <div class="nav-label">Management</div>
     ${navButton("admin", "📊", "Dashboard")}
@@ -1057,6 +1057,11 @@ function renderShell() {
       state.page = button.dataset.page;
       renderShell();
       renderPage();
+      if (isSuperAdmin() && state.page === "users") {
+        const usersSection = document.getElementById("allUsers");
+        const top = window.scrollY + usersSection.getBoundingClientRect().top - 24;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
     };
   });
 }
@@ -1118,7 +1123,7 @@ function renderSuperAdminDashboard() {
       </form>
       <div id="adminFormAlert"></div>
     </section>
-    <section class="card mt super-admin-users">
+    <section class="card mt super-admin-users" id="allUsers">
       <h2>All Users</h2>
       <div id="userTable">Loading users...</div>
     </section>`;
